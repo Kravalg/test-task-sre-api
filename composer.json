@@ -1,4 +1,6 @@
 {
+    "name": "kravtsov/test-task-sre-api",
+    "description": "Test Task SRE API",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
