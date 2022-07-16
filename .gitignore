@@ -20,3 +20,5 @@
 .phpunit.result.cache
 ###< phpunit/phpunit ###
 
+supervisord.pid
+
