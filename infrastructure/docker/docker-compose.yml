@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  test-task-php-fpm:
+    dns:
+      - 8.8.8.8
+    build:
+      context: php-fpm
+    volumes:
+      - ../../:/app
+      - ./php-fpm/conf.d/api-platform.ini:/usr/local/etc/php/php.ini:ro
+      - ./supervisor/supervisord.conf:/etc/supervisord.conf:cached
+      - ./php-fpm/run.sh:/usr/local/bin/run.sh:cached
+    command:
+      - run.sh
+    depends_on:
+      - test-task-mysql
+    working_dir: /app
+    networks:
+      - test-task
+
+  test-task-mailer:
+    image: schickling/mailcatcher
+    ports:
+      - 1080:1080
+    networks:
+      - test-task
+
+  test-task-nginx:
+    image: nginx:1.20-alpine
+    ports:
+      - 80:80
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - ../..//public:/app
+      - ./nginx/templates:/etc/nginx/templates:cached
+    depends_on:
+      - test-task-php-fpm
+    networks:
+      - test-task
+    environment:
+      - VIRTUAL_HOST=${TEST_TASK_SERVICE_DOMAIN}
+
+  test-task-mysql:
+    image: mysql:8
+    ports:
+      - 3306:3306
+    volumes:
+      - ~/apps/mysql:/var/lib/mysql
+    networks:
+      - test-task
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+
+  test-task-rabbitmq:
+    image: rabbitmq:3.8-management-alpine
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    networks:
+      - test-task
+
+networks:
+  test-task:
