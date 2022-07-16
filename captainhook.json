@@ -1,0 +1,34 @@
+{
+  "config": {
+    "run-mode": "docker",
+    "run-exec": "docker exec docker_test-task-php-fpm_1"
+  },
+  "commit-msg": {
+    "enabled": true,
+    "actions": [
+      {
+        "action": "\\Ramsey\\CaptainHook\\ValidateConventionalCommit"
+      }
+    ]
+  },
+  "pre-push": {
+    "enabled": true,
+    "actions": [
+      {
+        "action": "\\CaptainHook\\App\\Hook\\PHP\\Action\\Linting"
+      },
+      {
+        "action": "composer validate"
+      },
+      {
+        "action": "./vendor/bin/phpunit"
+      },
+      {
+        "action": "./vendor/bin/phpcs"
+      },
+      {
+        "action": "./vendor/bin/psalm"
+      }
+    ]
+  }
+}
