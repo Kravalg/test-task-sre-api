@@ -14,7 +14,11 @@
     </projectFiles>
 
     <issueHandlers>
+        <UndefinedMethod errorLevel="suppress" />
         <PropertyNotSetInConstructor errorLevel="suppress" />
         <MissingConstructor errorLevel="suppress" />
+        <MixedAssignment errorLevel="suppress" />
+        <MixedArgument errorLevel="suppress" />
+        <MixedArrayAccess errorLevel="suppress" />
     </issueHandlers>
 </psalm>

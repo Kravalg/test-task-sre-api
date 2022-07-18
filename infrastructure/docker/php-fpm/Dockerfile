@@ -42,6 +42,7 @@ RUN apk add --update supervisor && rm -rf /tmp/* /var/cache/apk/*
 RUN apk add openrc --no-cache
 
 RUN apk add rabbitmq-c-dev
+RUN docker-php-ext-install gd bcmath zip bz2 pdo pdo_mysql simplexml opcache sockets pcntl xsl pspell
 
 RUN curl -sSk https://getcomposer.org/installer | php -- --disable-tls && \
    mv composer.phar /usr/local/bin/composer

@@ -1,22 +1,114 @@
 framework:
     messenger:
-        # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
-        # failure_transport: failed
-
-        transports:
-            # https://symfony.com/doc/current/messenger.html#transport-configuration
-            # async: '%env(MESSENGER_TRANSPORT_DSN)%'
-            # failed: 'doctrine://default?queue_name=failed'
-            # sync: 'sync://'
+        buses:
+            command_bus:
+                middleware:
+                    - doctrine_ping_connection
+                    - doctrine_close_connection
 
         routing:
-            # Route your messages to the transports
-            # 'App\Message\YourMessage': async
+            'App\Domain\Event\JobStartEvent': job_start
+            'App\Domain\Event\JobStatusCheckEvent': job_status_check
+            'App\Domain\Event\JobPerformActionEvent': job_perform_action
 
-# when@test:
-#    framework:
-#        messenger:
-#            transports:
-#                # replace with your transport name here (e.g., my_transport: 'in-memory://')
-#                # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
-#                async: 'in-memory://'
+        failure_transport: failed_default
+
+        transports:
+            job_start:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                failure_transport: job_start_failed
+                retry_strategy:
+                    delay: 10000
+                    max_delay: 60000
+                    max_retries: 3
+                    multiplier: 3
+                options:
+                    exchange:
+                        name: job_start
+                        type: direct
+                        default_publish_routing_key: job_start
+                    queues:
+                        job_start:
+                            binding_keys:
+                                - job_start
+            job_start_failed:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    service: 'App\Infrastructure\Utils\InfiniteRetryStrategy'
+                options:
+                    exchange:
+                        name: job_start_failed
+                        type: direct
+                    queues:
+                        job_start_failed:
+                            binding_keys:
+                                - job_start
+            job_status_check:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                failure_transport: job_status_check_failed
+                retry_strategy:
+                    delay: 10000
+                    max_delay: 60000
+                    max_retries: 3
+                    multiplier: 3
+                options:
+                    exchange:
+                        name: job_status_check
+                        type: direct
+                        default_publish_routing_key: job_status_check
+                    queues:
+                        job_status_check:
+                            binding_keys:
+                                - job_status_check
+            job_status_check_failed:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    service: 'App\Infrastructure\Utils\InfiniteRetryStrategy'
+                options:
+                    exchange:
+                        name: job_status_check_failed
+                        type: direct
+                    queues:
+                        job_status_check_failed:
+                            binding_keys:
+                                - job_status_check
+            job_perform_action:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                failure_transport: job_perform_action_failed
+                retry_strategy:
+                    delay: 10000
+                    max_delay: 60000
+                    max_retries: 3
+                    multiplier: 3
+                options:
+                    exchange:
+                        name: job_perform_action
+                        type: direct
+                        default_publish_routing_key: job_perform_action
+                    queues:
+                        job_perform_action:
+                            binding_keys:
+                                - job_perform_action
+            job_perform_action_failed:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    service: 'App\Infrastructure\Utils\InfiniteRetryStrategy'
+                options:
+                    exchange:
+                        name: job_perform_action_failed
+                        type: direct
+                    queues:
+                        job_perform_action_failed:
+                            binding_keys:
+                                - job_perform_action
+            failed_default:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    exchange:
+                        name: default_failed_messages
+                        type: direct
+                        default_publish_routing_key: default_failed_messages
+                    queues:
+                        default_failed_messages:
+                            binding_keys:
+                                - default_failed_messages

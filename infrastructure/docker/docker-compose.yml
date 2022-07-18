@@ -47,7 +47,7 @@ services:
     ports:
       - 3306:3306
     volumes:
-      - ~/apps/mysql:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
     networks:
       - test-task
     environment:
@@ -69,3 +69,7 @@ services:
 
 networks:
   test-task:
+
+volumes:
+  mysql-data:
+    driver: local
